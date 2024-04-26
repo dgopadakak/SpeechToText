@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -68,7 +70,7 @@ class MainActivity : ComponentActivity() {
 fun LayoutWithGoogleSpeechService(
     modifier: Modifier = Modifier
 ) {
-    val text = remember { mutableStateOf("Text will be here") }
+    val text = remember { mutableStateOf("") }
     val intent =
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(
@@ -101,7 +103,7 @@ fun LayoutWithGoogleSpeechService(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround
     ) {
-        Text(text = text.value)
+        Text(text = text.value.ifEmpty { "Click thr button, text will be here" })
         Button(
             onClick = {
                 recordAudioLauncher.launch(intent)
@@ -116,8 +118,15 @@ fun LayoutWithGoogleSpeechService(
 fun LayoutWithSpeechRecognizer(
     modifier: Modifier = Modifier
 ) {
-    val text = remember { mutableStateOf("Text will be here") }
     val context = LocalContext.current
+    val speechToTextParser = remember { SpeechToTextParser(context) }
+    val canRecord = remember { mutableStateOf(false) }
+    val recordAudioLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { isGranted ->
+        canRecord.value = isGranted
+    }
+    val state by speechToTextParser.state.collectAsState()
 
     Column(
         modifier = modifier
@@ -125,10 +134,22 @@ fun LayoutWithSpeechRecognizer(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround
     ) {
-        Text(text = text.value)
+        if (state.isSpeaking) {
+            Text(text = "Speaking...")
+        } else {
+            Text(text = state.spokenText.ifEmpty { "Click thr button, text will be here" })
+        }
         Button(
             onClick = {
-
+                if (!canRecord.value) {
+                    recordAudioLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                } else {
+                    if (!state.isSpeaking) {
+                        speechToTextParser.stopListening()
+                    } else {
+                        speechToTextParser.startListening()
+                    }
+                }
             }
         ) {
             Text(text = "Listen with SpeechRecognizer")

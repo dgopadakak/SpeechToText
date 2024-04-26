@@ -1,6 +1,6 @@
 package com.dgopadakak.speechtotext
 
-import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -12,18 +12,18 @@ import kotlinx.coroutines.flow.update
 import java.util.Locale
 
 class SpeechToTextParser(
-    private val app: Application
+    private val context: Context
 ) : RecognitionListener {
 
     private val _state = MutableStateFlow(SpeechToTextParserState())
     val state = _state.asStateFlow()
 
-    private val recognizer: SpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(app)
+    private val recognizer: SpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
 
-    fun startListening(languageCode: String) {
+    fun startListening() {
         _state.update { SpeechToTextParserState() }
 
-        if (!SpeechRecognizer.isRecognitionAvailable(app)) {
+        if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             _state.update { currentState ->
                 currentState.copy(
                     error = "Recognition is not available!"
