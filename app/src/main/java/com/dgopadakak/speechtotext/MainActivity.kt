@@ -144,7 +144,7 @@ fun LayoutWithSpeechRecognizer(
                 if (!canRecord.value) {
                     recordAudioLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                 } else {
-                    if (!state.isSpeaking) {
+                    if (state.isSpeaking) {
                         speechToTextParser.stopListening()
                     } else {
                         speechToTextParser.startListening()
@@ -152,7 +152,11 @@ fun LayoutWithSpeechRecognizer(
                 }
             }
         ) {
-            Text(text = "Listen with SpeechRecognizer")
+            if (canRecord.value) {
+                Text(text = "Listen with SpeechRecognizer")
+            } else {
+                Text(text = "Check permission")
+            }
         }
     }
 }
