@@ -51,26 +51,22 @@ class MainActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             text.value = ""
-                            try {
-                                val intent =
-                                    Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                                        putExtra(
-                                            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                                            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-                                        )
-                                        putExtra(
-                                            RecognizerIntent.EXTRA_LANGUAGE,
-                                            Locale.getDefault()
-                                        )
-                                        putExtra(
-                                            RecognizerIntent.EXTRA_PROMPT,
-                                            "Say something"
-                                        )
-                                    }
-                                result.launch(intent)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
+                            val intent =
+                                Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                    putExtra(
+                                        RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                                    )
+                                    putExtra(
+                                        RecognizerIntent.EXTRA_LANGUAGE,
+                                        Locale.getDefault()
+                                    )
+                                    putExtra(
+                                        RecognizerIntent.EXTRA_PROMPT,
+                                        "Say something"
+                                    )
+                                }
+                            result.launch(intent)
                         }
                     ) {
                         Text(text = "Listen")
