@@ -1,78 +1,137 @@
 package com.dgopadakak.speechtotext
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.dgopadakak.speechtotext.ui.theme.SpeechToTextTheme
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
-    private val result =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val results = result.data?.getStringArrayListExtra(
-                    RecognizerIntent.EXTRA_RESULTS
-                ) as ArrayList<String>
-                text.value = results[0]
-            }
-        }
-    private lateinit var text: MutableState<String>
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             SpeechToTextTheme {
-                text = remember { mutableStateOf("") }
-
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceAround,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = text.value)
-                    Button(
-                        onClick = {
-                            text.value = ""
-                            val intent =
-                                Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                                    putExtra(
-                                        RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-                                    )
-                                    putExtra(
-                                        RecognizerIntent.EXTRA_LANGUAGE,
-                                        Locale.getDefault()
-                                    )
-                                    putExtra(
-                                        RecognizerIntent.EXTRA_PROMPT,
-                                        "Say something"
-                                    )
-                                }
-                            result.launch(intent)
-                        }
-                    ) {
-                        Text(text = "Listen")
-                    }
+                    LayoutWithGoogleSpeechService(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(2.dp)
+                            .background(Color.Black)
+                    )
+
+                    LayoutWithSpeechRecognizer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun LayoutWithGoogleSpeechService(
+    modifier: Modifier = Modifier
+) {
+    val text = remember { mutableStateOf("Text will be here") }
+    val intent =
+        Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE,
+                Locale.getDefault()
+            )
+            putExtra(
+                RecognizerIntent.EXTRA_PROMPT,
+                "Say something"
+            )
+        }
+    val recordAudioLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val results = result.data?.getStringArrayListExtra(
+                RecognizerIntent.EXTRA_RESULTS
+            ) as ArrayList<String>
+            text.value = results[0]
+        }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceAround
+    ) {
+        Text(text = text.value)
+        Button(
+            onClick = {
+                recordAudioLauncher.launch(intent)
+            }
+        ) {
+            Text(text = "Listen with Google Speech Service")
+        }
+    }
+}
+
+@Composable
+fun LayoutWithSpeechRecognizer(
+    modifier: Modifier = Modifier
+) {
+    val text = remember { mutableStateOf("Text will be here") }
+    val context = LocalContext.current
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceAround
+    ) {
+        Text(text = text.value)
+        Button(
+            onClick = {
+
+            }
+        ) {
+            Text(text = "Listen with SpeechRecognizer")
         }
     }
 }
