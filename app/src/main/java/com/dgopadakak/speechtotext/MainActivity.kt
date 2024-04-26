@@ -103,7 +103,7 @@ fun LayoutWithGoogleSpeechService(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround
     ) {
-        Text(text = text.value.ifEmpty { "Click thr button, text will be here" })
+        Text(text = text.value.ifEmpty { "Click the button, text will be here" })
         Button(
             onClick = {
                 recordAudioLauncher.launch(intent)
@@ -137,7 +137,7 @@ fun LayoutWithSpeechRecognizer(
         if (state.isSpeaking) {
             Text(text = "Speaking...")
         } else {
-            Text(text = state.spokenText.ifEmpty { "Click thr button, text will be here" })
+            Text(text = state.spokenText.ifEmpty { "Click the button, text will be here" })
         }
         Button(
             onClick = {
