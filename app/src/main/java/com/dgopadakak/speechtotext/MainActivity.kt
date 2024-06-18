@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -120,13 +121,19 @@ fun LayoutWithSpeechRecognizer(
 ) {
     val context = LocalContext.current
     val speechToTextParser = remember { SpeechToTextParser(context) }
-    val canRecord = remember { mutableStateOf(false) }
+    val havePermission = remember { mutableStateOf(false) }
     val recordAudioLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
-        canRecord.value = isGranted
+        havePermission.value = isGranted
     }
     val state by speechToTextParser.state.collectAsState()
+
+    LaunchedEffect(key1 = havePermission.value) {
+        if (havePermission.value) {
+            speechToTextParser.startListening()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -141,7 +148,7 @@ fun LayoutWithSpeechRecognizer(
         }
         Button(
             onClick = {
-                if (!canRecord.value) {
+                if (!havePermission.value) {
                     recordAudioLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                 } else {
                     if (state.isSpeaking) {
@@ -152,11 +159,7 @@ fun LayoutWithSpeechRecognizer(
                 }
             }
         ) {
-            if (canRecord.value) {
-                Text(text = "Listen with SpeechRecognizer")
-            } else {
-                Text(text = "Check permission")
-            }
+            Text(text = "Listen with SpeechRecognizer")
         }
     }
 }
