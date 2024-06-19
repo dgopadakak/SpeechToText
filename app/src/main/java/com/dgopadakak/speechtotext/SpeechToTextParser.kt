@@ -89,6 +89,7 @@ class SpeechToTextParser(
         }
         _state.update { currentState ->
             currentState.copy(
+                isSpeaking = false,
                 error = "Error: $error"
             )
         }
